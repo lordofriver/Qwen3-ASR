@@ -19,6 +19,7 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlparse
+import os
 
 import librosa
 import numpy as np
@@ -32,7 +33,9 @@ MaybeList = Union[Any, List[Any]]
 
 SAMPLE_RATE = 16000
 MAX_ASR_INPUT_SECONDS = 1200
+MAX_ASR_INPUT_SECONDS = int(os.environ.get("MAX_ASR_INPUT_SECONDS", 60))
 MAX_FORCE_ALIGN_INPUT_SECONDS = 180
+MAX_FORCE_ALIGN_INPUT_SECONDS = int(os.environ.get("MAX_FORCE_ALIGN_INPUT_SECONDS", 60))
 MIN_ASR_INPUT_SECONDS = 0.5
 SUPPORTED_LANGUAGES: List[str] = [
     "Chinese",
