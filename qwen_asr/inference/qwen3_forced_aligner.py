@@ -18,8 +18,14 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
-import nagisa
 import torch
+
+try:
+    import nagisa
+    NAGISA_AVAILABLE = True
+except ImportError:
+    NAGISA_AVAILABLE = False
+    nagisa = None
 from qwen_asr.core.transformers_backend import (
     Qwen3ASRConfig,
     Qwen3ASRForConditionalGeneration,
@@ -99,6 +105,11 @@ class Qwen3ForceAlignProcessor():
         return tokens
 
     def tokenize_japanese(self, text: str) -> List[str]:
+        if not NAGISA_AVAILABLE:
+            raise ImportError(
+                "nagisa is required for Japanese tokenization. "
+                "Install it with: pip install 'qwen-asr[cjk]'"
+            )
         words = nagisa.tagging(text).words
         tokens: List[str] = []
         for w in words:
@@ -240,8 +251,14 @@ class Qwen3ForceAlignProcessor():
             word_list = self.tokenize_japanese(text)
         elif language.lower() == "korean":
             if self.ko_tokenizer is None:
-                from soynlp.tokenizer import LTokenizer
-                self.ko_tokenizer = LTokenizer(scores=self.ko_score)
+                try:
+                    from soynlp.tokenizer import LTokenizer
+                    self.ko_tokenizer = LTokenizer(scores=self.ko_score)
+                except ImportError:
+                    raise ImportError(
+                        "soynlp is required for Korean tokenization. "
+                        "Install it with: pip install 'qwen-asr[cjk]'"
+                    )
             word_list = self.tokenize_korean(self.ko_tokenizer, text)
         else:
             word_list = self.tokenize_space_lang(text)
